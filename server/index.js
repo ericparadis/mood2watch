@@ -1,4 +1,3 @@
-const config = require('config');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -17,12 +16,20 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(cors());
 
 const movies = require('./routes/api/movies');
+const imdbid = require('./routes/api/imdbid');
+const primeid = require('./routes/api/primeid');
+const posters = require('./routes/api/posters');
+const upload = require('./routes/api/upload');
 const tags = require('./routes/api/tags');
 const users = require('./routes/api/users');
 const auth = require('./routes/api/auth');
 const profile = require('./routes/api/profile');
 
 app.use('/api/movies', movies);
+app.use('/api/imdbid', imdbid);
+app.use('/api/primeid', primeid);
+app.use('/api/posters', posters);
+app.use('/api/upload', upload);
 app.use('/api/tags', tags);
 app.use('/api/users', users);
 app.use('/api/auth', auth);
