@@ -7,24 +7,40 @@ const router = express.Router();
 //Get Movies
 router.get('/', async (req, res) => {
     const movies = await loadMovieCollection();
+
+    const by = req.query.by || 'year'
+
     const count = parseInt(req.query.count) || 10;
     const page = parseInt(req.query.page) || 1;
     const year = req.query.year || 'all';
+    const imdbId = req.query.imdbId || null;
     const sortValue = req.query.sort || 'Title';
     const order = req.query.order || 1;
-    if (year === 'all') res.send(await movies
-        .find({})
-        .skip(count*(page-1))
-        .limit(count)
-        .sort( { [sortValue] : order } )
-        .toArray());
-    else res.send(await movies
-        .find({"Released" : {$regex : year}})
-        .skip(count*(page-1))
-        .limit(count)
-        .sort( { [sortValue] : order } )
-        .toArray());
 
+    if (by === 'year') {
+        if (year === 'all') {
+            res.send(await movies
+                .find({})
+                .skip(count*(page-1))
+                .limit(count)
+                .sort( { [sortValue] : order } )
+                .toArray());
+        } else {
+            res.send(await movies
+                .find({"Released" : {$regex : year}})
+                .skip(count*(page-1))
+                .limit(count)
+                .sort( { [sortValue] : order } )
+                .toArray());
+        }
+    }
+
+    if (by === 'random') {
+        res.send(await movies.aggregate([{ $sample: { size: 1 } }]).toArray());
+    }
+    if (by === 'imdbId') {
+        res.send(await movies.find({imdbID: imdbId}).toArray());
+    }
 });
 
 //Get Movie by ID
@@ -77,9 +93,10 @@ router.post('/many', async (req, res) => {
 //Update Movie by ID
 router.put('/:id', async (req, res) => {
     const movies = await loadMovieCollection();
-    await movies.updateOne({_id: new mongodb.ObjectID(req.params.id)},{$set: {name: req.body.name, tag: req.body.tag, type: req.body.type}});
+    await movies.updateOne({_id: new mongodb.ObjectID(req.params.id)},{$set: req.body});
     res.status(200).send();
 });
+
 
 //Delete Movie
 router.delete('/:id', async (req, res) => {
@@ -93,9 +110,10 @@ async function loadMovieCollection() {
     .connect('mongodb+srv://mood:mood@cluster0-nei35.mongodb.net/test?retryWrites=true&w=majority', {
         useNewUrlParser: true
     });
-    return client.db('mood2watch').collection('movies');
-    
+    return client.db('mood2watch').collection('movies'); 
 }
+
+
 
 
 
