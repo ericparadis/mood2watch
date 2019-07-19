@@ -13,8 +13,18 @@ router.get('/', async (req, res) => {
     const count = parseInt(req.query.count) || 10;
     const page = parseInt(req.query.page) || 1;
     const year = req.query.year || 'all';
-    const mood = req.query.mood;
-    const moodValue = req.query.moodValue || 50;
+
+    const AngerValue = req.query.anger;
+    const AnticipationValue = req.query.anticipation;
+    const JoyValue = req.query.joy;
+    const TrustValue = req.query.trust;
+    const FearValue = req.query.fear;
+    const SurpriseValue = req.query.surprise;
+    const SadnessValue = req.query.sadness;
+    const DisgustValue = req.query.disgust;
+
+    const word = req.query.word
+
     const imdbId = req.query.imdbId;
     const sortValue = req.query.sort || 'Title';
     const order = req.query.order || 1;
@@ -43,30 +53,53 @@ router.get('/', async (req, res) => {
     if (by === 'imdbId') {
         res.send(await movies.find({"imdbID": imdbId }).toArray());
     }
-    // if (by === 'mood') {
-    //     res.send(await movies
-    //         .find({ [mood] : { $exists: true } })
-    //         .sort( { [mood] : -1 } )
-    //         .collation({locale: "en_US", numericOrdering: true})
-    //         .skip(count*(page-1))
-    //         .limit(count)
-    //         .toArray());
-    // }
+    if (by === 'word') {
+        
+        const words = await loadWordsCollection()
+        const wordMoods = await words
+            .find({ "word" : word })
+            .toArray();
+
+            res.send(await movies
+                .aggregate([
+                    {$match: {"Anger" : { $exists: true }}},
+                    {$project: {
+                        TotalDiff: {$add: [
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Anger}, {$toInt: "$Anger"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Anticipation}, {$toInt: "$Anticipation"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Joy}, {$toInt: "$Joy"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Trust}, {$toInt: "$Trust"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Fear}, {$toInt: "$Fear"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Surprise}, {$toInt: "$Surprise"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Sadness}, {$toInt: "$Sadness"}]}},
+                            {$abs: {$subtract: [{$toInt: wordMoods[0].Disgust}, {$toInt: "$Disgust"}]}},
+                        ]},
+                        doc: '$$ROOT'}},
+                    {$sort: {TotalDiff: 1}}
+                ])
+                .skip(count*(page-1))
+                .limit(count)
+                .toArray());
+
+
+    }
     if (by === 'mood') {
         res.send(await movies
             .aggregate([
                 {$match: {"Anger" : { $exists: true }}},
                 {$project: {
-                    AngerDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}},
-                    AnticipationDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    JoyDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    TrustDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    FearDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    SurpriseDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    SadnessDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
-                    DusgustDiff: {$abs: {$subtract: [{$toDecimal: moodValue}, {$toDecimal: "$Anger"}]}}, 
+                    TotalDiff: {$add: [
+                        {$abs: {$subtract: [{$toInt: AngerValue}, {$toInt: "$Anger"}]}},
+                        {$abs: {$subtract: [{$toInt: AnticipationValue}, {$toInt: "$Anticipation"}]}},
+                        {$abs: {$subtract: [{$toInt: JoyValue}, {$toInt: "$Joy"}]}},
+                        {$abs: {$subtract: [{$toInt: TrustValue}, {$toInt: "$Trust"}]}},
+                        {$abs: {$subtract: [{$toInt: FearValue}, {$toInt: "$Fear"}]}},
+                        {$abs: {$subtract: [{$toInt: SurpriseValue}, {$toInt: "$Surprise"}]}},
+                        {$abs: {$subtract: [{$toInt: SadnessValue}, {$toInt: "$Sadness"}]}},
+                        {$abs: {$subtract: [{$toInt: DisgustValue}, {$toInt: "$Disgust"}]}},
+                    ]},
                     doc: '$$ROOT'}},
-                {$sort: {diff: 1}}
+                {$sort: {TotalDiff: 1}}
             ])
             .skip(count*(page-1))
             .limit(count)
@@ -173,8 +206,12 @@ async function loadWindowsCollection() {
     return client.db('mood2watch').collection('windows'); 
 }
 
-
-
-
+async function loadWordsCollection() {
+    const client = await mongodb.MongoClient
+    .connect('mongodb+srv://mood:mood@cluster0-nei35.mongodb.net/test?retryWrites=true&w=majority', {
+        useNewUrlParser: true
+    });
+    return client.db('mood2watch').collection('words'); 
+}
 
 module.exports = router;

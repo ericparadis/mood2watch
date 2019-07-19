@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     const windows = await loadWindowCollection();
     const count = parseInt(req.query.count) || 10;
     const page = parseInt(req.query.page) || 1;
-    res.send(await windows.find({}).sort( { rank: 1 } ).skip(count*(page-1)).limit(count).toArray());
+    res.send(await windows.find({}).skip(count*(page-1)).limit(count).toArray());
 });
 
 //Get Window by channel
