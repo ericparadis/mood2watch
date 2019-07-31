@@ -27,19 +27,19 @@ router.get('/', async (req, res) => {
 
     const imdbId = req.query.imdbId;
     const sortValue = req.query.sort || 'Title';
-    const order = req.query.order || 1;
+    const order = req.query.order || -1;
 
     if (by === 'year') {
         if (year === 'all') {
             res.send(await movies
-                .find({})
+                .find({"Language": "English"})
                 .skip(count*(page-1))
                 .limit(count)
                 .sort( { [sortValue] : order } )
                 .toArray());
         } else {
             res.send(await movies
-                .find({"Released" : {$regex : year}})
+                .find({"Released": {$regex : year}, "Language": "English"})
                 .skip(count*(page-1))
                 .limit(count)
                 .sort( { [sortValue] : order } )
@@ -120,7 +120,7 @@ router.get('/', async (req, res) => {
             .toArray();
 
         res.send(await movies
-            .find({"imdbID": { $in: prime[0].ids } })
+            .find({"imdbID": { $in: prime[0].ids }, "Language": "English" })
             .sort({"imdbRating": -1})
             .skip(count*(page-1))
             .limit(count)
