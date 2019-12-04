@@ -17,6 +17,7 @@ app.use(cors());
 
 const movies = require('./routes/api/movies');
 const imdbid = require('./routes/api/imdbid');
+const asinid = require('./routes/api/asinid');
 const primeid = require('./routes/api/primeid');
 const poster = require('./routes/api/poster');
 const upload = require('./routes/api/upload');
@@ -29,6 +30,7 @@ const profile = require('./routes/api/profile');
 app.use('/api/movies', movies);
 app.use('/api/imdbid', imdbid);
 app.use('/api/primeid', primeid);
+app.use('/api/asinid', asinid);
 app.use('/api/poster', poster);
 app.use('/api/upload', upload);
 app.use('/api/windows', windows);

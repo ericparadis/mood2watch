@@ -37,6 +37,7 @@ router.post('/', async (req, res) => {
     res.status(201).send();
 });
 
+
 //Update Word by ID
 router.put('/:id', async (req, res) => {
     const words = await loadWordCollection();
