@@ -17,6 +17,7 @@ router.get('/:id', async (req, res) => {
     res.send(await words.findOne({channel: req.params.id}));
 });
 
+
 //Add Word
 router.post('/', async (req, res) => {
     const words = await loadWordCollection();
