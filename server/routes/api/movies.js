@@ -80,9 +80,8 @@ router.get('/', async (req, res) => {
                 .skip(count*(page-1))
                 .limit(count)
                 .toArray());
-
-
     }
+
     if (by === 'mood') {
         res.send(await movies
             .aggregate([
@@ -133,7 +132,6 @@ router.get('/:id', async (req, res) => {
     const movies = await loadMovieCollection();
     res.send(await movies.findOne({_id: new mongodb.ObjectID(req.params.id)}));
 });
-
 
 //Add Movie
 router.post('/', async (req, res) => {

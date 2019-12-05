@@ -6,7 +6,6 @@ const mongodb = require('mongodb');
 
 const router = express.Router();
 
-
 //Auth User
 router.post('/', async (req, res) => {
     const users = await loadUserCollection();
