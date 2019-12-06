@@ -48,8 +48,19 @@ router.get('/', async (req, res) => {
     }
 
     if (by === 'random') {
-        res.send(await movies.aggregate([{ $sample: { size: 1 } }]).toArray());
+        const windows = await loadWindowsCollection()
+        const prime = await windows
+            .find({ "name" : "prime" })
+            .toArray();
+
+        res.send(await movies
+            .aggregate([
+                { $match: { imdbID: { $in: prime[0].ids } } },
+                { $sample: { size: 1 } }
+            ])
+            .toArray());     
     }
+
     if (by === 'imdbId') {
         res.send(await movies.find({"imdbID": imdbId }).toArray());
     }
